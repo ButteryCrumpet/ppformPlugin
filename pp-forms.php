@@ -13,31 +13,15 @@ include 'form-meta.php';
 include 'rewrites.php';
 include 'ppform-js.php';
 
-//move to template file?
-function default_contact_form() {
-	$str = '<div class="ppTopErrors">';
-	$str .=	'<div class="em" data-error="名前" ></div>';
-	$str .=	'<div class="em" data-error="フリガナ" ></div>';
-	$str .=	'<div class="em" data-error="メール" ></div>';
-	$str .=	'<div class="em" data-error="電話" ></div>';
-	$str .=	'<div class="em" data-error="問い" ></div>';
-	$str .= '</div>';
-	$str .=	'<dl>';
-	$str .=	'<dt><span>必須</span>お名前</dt><dd><input name="名前" type="text" placeholder="例)石材　太郎" data-ppForm="text" required></dd>';
-	$str .=	'<dt><span>必須</span>ふりがな</dt><dd><input name="フリガナ" type="text" placeholder="例)せきざい　たろう" required data-ppForm="kana"><div class="em" data-error="フリガナ" ></div></dd>';
-	$str .=	'<dt><span>必須</span>メールアドレス</dt><dd><input name="メール" type="text" placeholder="例)石材太郎" required data-ppForm="email"></dd>';
-	$str .=	'<dt><span>必須</span>電話番号</dt><dd><input name="電話" type="text" required data-ppForm="phone"></dd>';
-	$str .=	'<dt><span class="nini">任意</span>お問い合せ内容</dt><dd><textarea name="問い" data-ppForm="jchars"></textarea></dd>';
-	$str .=	'</dl>';
-
-	return $str;
-}
-
 //shift this around
-function run_ppform() {
+function run_ppform($atts) {
+
+	extract(shortcode_atts(array(
+		'form' => 'Test Form',
+	 ), $atts));
 
 	$actions = get_actions();
-	$form = get_form(1);
+	$form = get_form($form);
 
 	$html = parse_form($form, $actions['next']);
 
@@ -47,15 +31,15 @@ function run_ppform() {
 	$config = parse_ini_file('config.ini', true);	
 	$form = new AutoForm('default', $dom, $config);
 
-	if ($action === 'entry') {
+	if ($actions['current'] === 'entry') {
 		return $form->renderBaseForm(true);
-	} else if ($action === 'confirm') {
+	} else if ($actions['current'] === 'confirm') {
 		if ($form->checkValid()) {
 			return $form->renderDefaultConfirmation();
 		} else {
 			return $form->renderErrorForm();
 		}
-	} else if ($action === 'submit') {
+	} else if ($actions['current'] === 'submit') {
 		if ($form->checkValid()) {
 			//format in save, send using id, delete on send etc
 			$post = save_response($form->theData);
@@ -88,8 +72,19 @@ function parse_form($form, $action) {
 	return $html;
 }
 
-function get_form($id) {
-	return default_contact_form();
+function get_form($formName) {
+
+	$args = array(
+		'title' => $formName,
+		'post_type' => 'pp-form'
+	);
+
+	$query = new WP_Query( $args );
+
+	$form = $query->posts[0];
+	$content = $form->post_content;
+	return $content;
+	
 }
 
 //add flexible urls for different schemes
@@ -159,4 +154,4 @@ function mail_data($data, $config) {
    	return $mail->send();
 }
 
-add_shortcode( 'contact-form', 'run_ppform' );
+add_shortcode( 'ppform', 'run_ppform' );
