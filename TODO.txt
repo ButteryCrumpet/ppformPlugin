@@ -3,3 +3,4 @@ Simple form creation
 content text only? no wysiwyg
 confirm mail works
 refactor && clean
+TRANSLATION!!

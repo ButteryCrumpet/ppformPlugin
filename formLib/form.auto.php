@@ -8,20 +8,15 @@ include_once "form.classes.php";
 class AutoForm extends Form {
 
 	protected $name;
-	protected $action;
 	protected $elements;
 	protected $errorElements;
 	protected $config;
 	protected $DOM;
 
-	//change to taking parent element and grabbing
-	//child with tags/attr defined in config
-	//this allows for multiple instances???
 	function __construct($name, $dom, $config) {
 		$this->DOM = $dom;
 		$this->config = $config;
 		$this->name = $name;
-		$this->action = $config["main"]["onValidation"];
 
 		$this->elements = DOMUtils::getElementsByHasAttributes(
 			$this->DOM, array(
@@ -64,17 +59,19 @@ class AutoForm extends Form {
 
 	//form render? do fields need to know about error elements?
 	public function findErrorElements() {
+
+		$errorAttr = $this->config["attributes"]["errorEle"];
+
 		$elements = DOMUtils::getElementsByHasAttributes(
 			$this->DOM, 
 			array(
-				$this->config["error-message"]["attribute"]
+				$errorAttr
 				)
 		);
 		
 		foreach ($elements as $element) {
 			$this->errorElements[] = $element;
-			$config_vars = $this->config['error-message'];
-			$name = $element->getAttribute($config_vars['attribute']);
+			$name = $element->getAttribute($errorAttr);
 			$field = $this->fields[$name];
 			$field->addErrorElement($element);
 		}

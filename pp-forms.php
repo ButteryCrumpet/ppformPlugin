@@ -4,6 +4,7 @@
 Plugin Name: ppForms
  */
 
+include 'AdminNoticesAddon/bootstrap.php';
 include 'formLib/form.auto.php';
 include 'mailer/mail.class.php';
 include 'admin-manager.php';
@@ -21,36 +22,36 @@ function run_ppform($atts) {
 	 ), $atts));
 
 	$actions = get_actions();
-	$form = get_form($form);
+	$form_template = get_form($form);
 
-	$html = parse_form($form, $actions['next']);
+	$html = parse_form($form_template, $actions['next']);
 
 	$dom = new DOMDocument();
 	$dom->loadHTML(mb_convert_encoding($html, 'HTML-ENTITIES', 'UTF-8'));
 
-	$config = parse_ini_file('config.ini', true);	
-	$form = new AutoForm('default', $dom, $config);
+	$config = get_form_settings($form);
+	$ppform = new AutoForm('default', $dom, $config);
 
 	if ($actions['current'] === 'entry') {
-		return $form->renderBaseForm(true);
+		return $ppform->renderBaseForm(true);
 	} else if ($actions['current'] === 'confirm') {
-		if ($form->checkValid()) {
+		if ($ppform->checkValid()) {
 			return $form->renderDefaultConfirmation();
 		} else {
-			return $form->renderErrorForm();
+			return $ppform->renderErrorForm();
 		}
 	} else if ($actions['current'] === 'submit') {
-		if ($form->checkValid()) {
+		if ($ppform->checkValid()) {
 			//format in save, send using id, delete on send etc
-			$post = save_response($form->theData);
-			if (mail_data($form->theData, $config)) {
+			$post = save_response($ppform->theData);
+			if (mail_data($ppform->theData, $config)) {
 				return '<h3>Saved and Sent</h3>';
 			} else {
 				return "<h4>Error3</h4>";
 			}
 		} else {
 			$errors = '';
-			foreach ($form->theErrors as $field => $error) {
+			foreach ($ppform->theErrors as $field => $error) {
 				$errors .= $field . '--' . $error . '<br>';
 			}
 			return "<h4>" . $errors  ."</h4>";
@@ -65,6 +66,13 @@ function parse_form($form, $action) {
 	$href = get_site_url() . '/' . $action . '/' . get_the_ID() . '/';
 
 	$html = '<form class="ppform" id="ppForm-target" action="' . $href . '" method="POST" data-ppformbase >';
+	$html .= '<div class="ppTopErrors">';
+	$html .=	'<div class="em" data-error="名前" ></div>';
+	$html .=	'<div class="em" data-error="フリガナ" ></div>';
+	$html .=	'<div class="em" data-error="メール" ></div>';
+	$html .=	'<div class="em" data-error="電話" ></div>';
+	$html .=	'<div class="em" data-error="問い" ></div>';
+	$html .= '</div>';
 	$html .= $form;
 	$html .= '<p class="btn"><input type="submit" href="" value="内容を確認する"></p>';
 	$html .= '</form>';
@@ -123,6 +131,8 @@ function save_response($data) {
 //take response ID and send, validate against time etc and sent meta
 function mail_data($data, $config) {
 
+	$config = parse_ini_file('config.ini', true);
+
     $input = '';
     foreach ($data as $key => $value) {
         $input .= ucfirst($key). ": ". $value ."\r\n";
@@ -152,6 +162,39 @@ function mail_data($data, $config) {
 
     $mail = new Mail($mail_data);
    	return $mail->send();
+}
+
+function get_form_settings($form) {
+
+	$VALIDATOR_TYPES = array(
+		'text' => "GenericField",
+		'email' => "EmailField",
+		'kana' => "KanaField",
+		'phone' => "PhoneNoField",
+		'url' => "URLField",
+		'zip' => "JapanZipField",
+		'jchars' => "JapaneseCharacters",
+	);
+	
+	$ATTRIBUTES = array(
+		'validator-type' => "data-ppform",
+		'required' => "required",
+		'ppForm' => "data-ppform",
+		'ppFormBase' => "data-ppformbase",
+		'errorEle' => "data-error",
+	);
+
+	$config = array();
+	$config['validator-types'] = $VALIDATOR_TYPES;
+	$config['attributes'] = $ATTRIBUTES;
+
+	$config['error-message'] = array(
+		'error-class' => "hasError",
+		'require-message' => "を入力してください。",
+		'invalid-message' => "は不正です",
+	);
+
+	return $config;
 }
 
 add_shortcode( 'ppform', 'run_ppform' );

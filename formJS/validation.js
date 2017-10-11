@@ -76,6 +76,8 @@
   AutoValidation.prototype.validate = function(vField) {
     var _ = this;
 
+    console.log('Validating');
+
     if (vField.element.val() === '') {
       vField.element.removeClass(_.settings.errorClass +' '+ _.settings.validClass);
       vField.errElement.empty();

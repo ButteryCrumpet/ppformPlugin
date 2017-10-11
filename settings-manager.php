@@ -2,19 +2,24 @@
 
 function ppform_settings_init() {
 
+    //sections
     add_settings_section('ppform_settings_general', 'General', 'ppform_settings_general_callback', 'ppform_settings');
     add_settings_section('ppform_settings_classes', 'Classes', 'ppform_settings_classes_callback', 'ppform_settings');
     
     //General settings
     add_settings_field( 'ppform_javascript', 'Use Javascript', 'render_ppform_javascript_field', 'ppform_settings', 'ppform_settings_general' );
-    add_settings_field( 'ppform_required', 'Use HTML required', 'render_ppform_required_field', 'ppform_settings', 'ppform_settings_general' );
+    add_settings_field( 'ppform_submit_button_message', 'Submit Button Message', 'render_ppform_sb_message_field', 'ppform_settings', 'ppform_settings_general' );
+    add_settings_field( 'ppform_confirm_button_message', 'Confirm Button Message', 'render_ppform_cb_message_field', 'ppform_settings', 'ppform_settings_general' );
+    add_settings_field( 'ppform_completion_message', 'Form Completion Message', 'render_ppform_compl_message_field', 'ppform_settings', 'ppform_settings_general' );
 
     //Classes settings
     add_settings_field( 'ppform_valid_class', 'Valid Class', 'render_ppform_valid_class_field', 'ppform_settings', 'ppform_settings_classes' );
     add_settings_field('ppform_error_class', 'Error Class', 'render_ppform_error_class_field', 'ppform_settings', 'ppform_settings_classes');
 
     register_setting( 'ppform_settings', 'ppform_javascript' );
-    register_setting( 'ppform_settings', 'ppform_required' );
+    register_setting( 'ppform_settings', 'ppform_confirm_button_message' );
+    register_setting( 'ppform_settings', 'ppform_submit_button_message' );
+    register_setting( 'ppform_settings', 'ppform_completion_message' );
     register_setting( 'ppform_settings', 'ppform_valid_class' );
     register_setting( 'ppform_settings', 'ppform_error_class' );
 }
@@ -33,14 +38,22 @@ function render_ppform_javascript_field() {
     echo '<input type="checkbox">';
 }
 
-function render_ppform_required_field() {
-    echo '<input type="checkbox">';
-}
-
 function render_ppform_valid_class_field() {
     echo '<input type="text">';
 }
 
 function render_ppform_error_class_field() {
+    echo '<input type="text">';
+}
+
+function render_ppform_cb_message_field() {
+    echo '<input type="text">';
+}
+
+function render_ppform_sb_message_field() {
+    echo '<input type="text">';
+}
+
+function render_ppform_compl_message_field() {
     echo '<input type="text">';
 }
