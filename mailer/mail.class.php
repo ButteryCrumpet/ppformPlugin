@@ -76,7 +76,6 @@ class Mail {
 
     public function send() {
         if (!$this->valid) {
-            print_r($this->errors);
             return false;
         } else {
             $wrapped_message = wordwrap($this->message, 70, "\r\n");

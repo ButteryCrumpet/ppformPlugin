@@ -1,5 +1,5 @@
 /*jslint browser:true, devel:true */
-/*global window, $, jQuery*/
+/*global window, jQuery, jQuery*/
 
 /**
  * jquery.jpostal.js ver2.7
@@ -11,6 +11,8 @@
  * Requirements
  * jquery.js
  */
+
+
 var Jpostal = {};
 
 Jpostal.Database = function () {
@@ -66,7 +68,7 @@ Jpostal.Database.prototype.get = function (i_postcode) {
     case 6:
         head3 = i_postcode.substr(0, 3);
         address = this.find(head3);
-        address = $.extend(defaults, address);
+        address = jQuery.extend(defaults, address);
         break;
 
     case 7:
@@ -75,7 +77,7 @@ Jpostal.Database.prototype.get = function (i_postcode) {
             head3 = i_postcode.substr(0, 3);
             address = this.find(head3);
         }
-        address = $.extend(defaults, address);
+        address = jQuery.extend(defaults, address);
         break;
 
     default:
@@ -139,7 +141,7 @@ Jpostal.Database.prototype.request = function (i_postcode, i_callback) {
 Jpostal.Database.prototype.ajax = function (options) {
     "use strict";
 
-    $.ajax(options);
+    jQuery.ajax(options);
 };
 
 Jpostal.Database.prototype.save = function (i_data) {
@@ -264,7 +266,7 @@ Jpostal.Jpostal.prototype.displayAddress = function () {
         if (that.isSelectTagForPrefecture(key, format)) {
             that.setSelectTagForPrefecture(key, value);
         } else {
-            $(key).val(value);
+            jQuery(key).val(value);
         }
     });
 };
@@ -279,7 +281,7 @@ Jpostal.Jpostal.prototype.isSelectTagForPrefecture = function (i_key, i_fmt) {
     case '%3':
     case '%p':
     case '%prefecture':
-        if ($(i_key).get(0).tagName.toUpperCase() === 'SELECT') {
+        if (jQuery(i_key).get(0).tagName.toUpperCase() === 'SELECT') {
             f = true;
         } else {
             f = false;
@@ -301,8 +303,8 @@ Jpostal.Jpostal.prototype.setSelectTagForPrefecture = function (i_key, i_value) 
 
     // 驛ｽ驕灘ｺ懃恁縺ｮSELECT繧ｿ繧ｰ
     // 繧ｱ繝ｼ繧ｹ1: <option value="譚ｱ莠ｬ驛ｽ">譚ｱ莠ｬ驛ｽ</option>
-    $(i_key).val(i_value);
-    if ($(i_key).val() === i_value) {
+    jQuery(i_key).val(i_value);
+    if (jQuery(i_key).val() === i_value) {
         return;
     }
 
@@ -311,7 +313,7 @@ Jpostal.Jpostal.prototype.setSelectTagForPrefecture = function (i_key, i_value) 
     //    <option value="01">蛹玲ｵｷ驕�(01)</option>
     //    <option value="1">1.蛹玲ｵｷ驕�</option>
     value = '';
-    el = $(i_key)[0];
+    el = jQuery(i_key)[0];
     Object.keys(el.options).forEach(function (i) {
         var p = String(el.options[i].text).indexOf(i_value);
         if (0 <= p) {
@@ -320,7 +322,7 @@ Jpostal.Jpostal.prototype.setSelectTagForPrefecture = function (i_key, i_value) 
     });
 
     if (value !== '') {
-        $(i_key).val(value);
+        jQuery(i_key).val(value);
     }
 
 };
@@ -442,7 +444,7 @@ Jpostal.Jpostal.prototype.scanPostcode = function () {
         //    2        1234          123
         //    4        1234567       1234567
         //    ----------------------------------------
-        s = String($(this.options.postcode[0]).val());
+        s = String(jQuery(this.options.postcode[0]).val());
         if (0 <= s.search(/^([0-9]{3})([0-9A-Za-z]{4})/)) {
             // case 4
             s = s.substr(0, 7);
@@ -469,10 +471,10 @@ Jpostal.Jpostal.prototype.scanPostcode = function () {
         //    2        123        4         123
         //    3        123        4567      1234567
         //    ----------------------------------------
-        s3 = String($(this.options.postcode[0]).val());
-        s4 = String($(this.options.postcode[1]).val());
-        if (0 <= s3.search(/^[0-9]{3}$/)) {
-            if (0 <= s4.search(/^[0-9A-Za-z]{4}$/)) {
+        s3 = String(jQuery(this.options.postcode[0]).val());
+        s4 = String(jQuery(this.options.postcode[1]).val());
+        if (0 <= s3.search(/^[0-9]{3}jQuery/)) {
+            if (0 <= s4.search(/^[0-9A-Za-z]{4}jQuery/)) {
                 // case 3
                 s = s3 + s4;
             } else {
@@ -494,7 +496,7 @@ Jpostal.Jpostal.prototype.scanPostcode = function () {
 //     data file    callback            JposDb scope
 //    ---------------------------------------------------------------------
 //    001.js        JposDb.save            global scope
-//    001.js.php    $_GET['callback']    local scopde for function($){}
+//    001.js.php    jQuery_GET['callback']    local scopde for function(jQuery){}
 //    ---------------------------------------------------------------------
 var jQuery_jpostal_callback = function (i_data) {
     "use strict";

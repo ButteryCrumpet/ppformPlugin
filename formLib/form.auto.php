@@ -17,18 +17,18 @@ class AutoForm extends Form {
 		$this->DOM = $dom;
 		$this->config = $config;
 		$this->name = $name;
-
+		
 		$this->elements = DOMUtils::getElementsByHasAttributes(
 			$this->DOM, array(
 				$this->config["attributes"]["ppForm"]
 			)
 		);
-
+		
 		foreach ($this->elements as $element) {    
 			$field = $this->buildFieldFromElement($element);
 			$this->addField($field);
 		}
-
+		
 		$this->findErrorElements();
 	}
 
@@ -61,20 +61,24 @@ class AutoForm extends Form {
 	public function findErrorElements() {
 
 		$errorAttr = $this->config["attributes"]["errorEle"];
-
+		
 		$elements = DOMUtils::getElementsByHasAttributes(
 			$this->DOM, 
-			array(
-				$errorAttr
-				)
+			array($errorAttr)
 		);
 		
+		if ( ! count($elements) > 0 ) {
+			return null;
+		}
+
 		foreach ($elements as $element) {
 			$this->errorElements[] = $element;
 			$name = $element->getAttribute($errorAttr);
-			$field = $this->fields[$name];
-			$field->addErrorElement($element);
-		}
+			if (isset($this->fields[$name])) {
+				$field = $this->fields[$name];
+				$field->addErrorElement($element);
+			}
+		}	
 	}
 
 	//form renderer

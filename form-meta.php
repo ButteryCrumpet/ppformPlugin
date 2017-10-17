@@ -3,33 +3,12 @@
 function ppform_metaboxes() {
 
     //form metaboxes
-    add_meta_box('fields-div', 'Fields', 'render_field_metabox', 'pp-form', 'normal');
+    //add_meta_box('fields-div', 'Fields', 'render_field_metabox', 'pp-form', 'normal');
     add_meta_box('formactions-div', 'Actions', 'render_actions_metabox', 'pp-form', 'side');
     add_meta_box('emailopts-div', 'Email Options', 'render_email_opts_metabox', 'pp-form', 'normal');
     
     //response metabox
     add_meta_box( 'data-div', 'Data', 'render_response_data', 'ppform-response', 'normal' );
-}
-
-function render_field($i) {
-    $form = '<div>';
-    $form .= '<input type="text" name="ppfields['.$i.'][label]">';
-    $form .= '<input type="text" name="ppfields['.$i.'][name]">';
-    $form .= '<input type="text" name="ppfields['.$i.'][type]">';
-    $form .= '<input type="text" name="ppfields['.$i.'][value]">';
-    $form .= '<input type="text" name="ppfields['.$i.'][placeholder]">';
-    $form .= '</div>';
-    echo $form;
-}
-
-function render_field_metabox( $post ) {
-
-    $vals = get_post_meta($post->ID, 'ppfields');
-    print_r($vals);
-
-    for ($i = 0; $i < 2; $i++) {
-        render_field($i);
-    }
 }
 
 function render_actions_metabox( $post ) {
@@ -65,8 +44,6 @@ function render_email_opts_metabox( $post ) {
         <input type="text" name="emailopt[cc]" value="<?php echo $vals['cc'] ?>"><br>
         <label>Sent From</label>
         <input type="text" name="emailopt[sent-from]" value="<?php echo $vals['sent-from'] ?>"><br>
-        <label>Delete on Send</label>
-        <input type="checkbox" name="emailopt[delete-on-send]" <?php echo ($vals['delete-on-send']) ? 'checked' : '' ?>><br>
     </div>
 
     <?php
@@ -158,7 +135,7 @@ function save_form_post( $post_id, $post ) {
     }
 
     if ($errorExists) {
-        set_transient("my_save_post_errors_{$post_id}_{$user_id}", $errors, 45);
+        //set_transient("my_save_post_errors_{$post_id}_{$user_id}", $errors, 45);
     }
 
     return true;

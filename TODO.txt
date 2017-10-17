@@ -1,6 +1,6 @@
-ALL THE $@$#@ SETTINGS
+
 Simple form creation
-content text only? no wysiwyg
-confirm mail works
+responsive stylingly
+confirm mail works//
 refactor && clean
 TRANSLATION!!

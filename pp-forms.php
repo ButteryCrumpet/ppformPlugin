@@ -4,6 +4,8 @@
 Plugin Name: ppForms
  */
 
+define(PPFORM_FILE, plugin_dir_path(__FILE__));
+
 include 'AdminNoticesAddon/bootstrap.php';
 include 'formLib/form.auto.php';
 include 'mailer/mail.class.php';
@@ -12,75 +14,94 @@ include 'post-types.php';
 include 'settings-manager.php';
 include 'form-meta.php';
 include 'rewrites.php';
-include 'ppform-js.php';
+include 'ppform-scripts.php';
+include 'ppform-templates.php';
+
+register_activation_hook(PPFORM_FILE, 'init_settings');
 
 //shift this around
 function run_ppform($atts) {
 
 	extract(shortcode_atts(array(
 		'form' => 'Test Form',
-	 ), $atts));
+	), $atts));
+	
+	$action = get_action();
+	$form_data = get_form_data($form);
 
-	$actions = get_actions();
-	$form_template = get_form($form);
-
-	$html = parse_form($form_template, $actions['next']);
-
+	$html = parse_form($form_data['template']);
 	$dom = new DOMDocument();
 	$dom->loadHTML(mb_convert_encoding($html, 'HTML-ENTITIES', 'UTF-8'));
-
-	$config = get_form_settings($form);
+	
+	$config = get_form_settings($form_data['id']);
+	
 	$ppform = new AutoForm('default', $dom, $config);
 
-	if ($actions['current'] === 'entry') {
-		return $ppform->renderBaseForm(true);
-	} else if ($actions['current'] === 'confirm') {
-		if ($ppform->checkValid()) {
-			return $form->renderDefaultConfirmation();
-		} else {
-			return $ppform->renderErrorForm();
-		}
-	} else if ($actions['current'] === 'submit') {
-		if ($ppform->checkValid()) {
-			//format in save, send using id, delete on send etc
-			$post = save_response($ppform->theData);
-			if (mail_data($ppform->theData, $config)) {
-				return '<h3>Saved and Sent</h3>';
-			} else {
-				return "<h4>Error3</h4>";
-			}
-		} else {
-			$errors = '';
-			foreach ($ppform->theErrors as $field => $error) {
-				$errors .= $field . '--' . $error . '<br>';
-			}
-			return "<h4>" . $errors  ."</h4>";
-		}
-	} else {
-		return "<h4>Error1</h4>";
+	if ($action === 'entry') {
+		$form = $ppform->renderBaseForm($config['javascript']); 
+		return set_action($form, 'confirm');
 	}
+	
+	$valid = $ppform->checkValid();
+	
+	if ( ! $valid ) {
+		$form = $ppform->renderErrorForm();
+		return set_action($form, 'confirm');
+	}
+
+	if ( $valid ) {
+		if ($action === 'confirm') {
+			$form = $ppform->renderDefaultConfirmation();
+			return set_action($form, 'submit');
+		}
+		if ($action === 'submit') {
+
+			$message = $config['complete_message'];
+
+			if ($config['form-actions']['save-response'])
+				$post = save_response($ppform->theData);
+
+			if ($config['form-actions']['send-email'])
+				$sent = mail_data($ppform->theData, $config['mail']);
+
+			return $message . ' ' . var_dump($sent);
+		}
+	}
+	
+	return "missed option";
 }
 
-//turn into class  SET ACTIONS AFTER VALIDATE
-function parse_form($form, $action) {
+function parse_form($form_template) {
+	global $TEMPLATES;
+
+	$parts = explode( ',' ,$form_template);
+	$html = '<dl>';
+	foreach($parts as $part) {
+		if (isset($TEMPLATES[$part])) {
+			$html .= $TEMPLATES[$part];
+			$added = true;
+		}
+	}
+
+	if (!$added) {
+		$html .= $form_template;
+	}
+
+	return $html .= '</dl>';
+}
+
+function set_action($form_html, $action) {
 	$href = get_site_url() . '/' . $action . '/' . get_the_ID() . '/';
 
-	$html = '<form class="ppform" id="ppForm-target" action="' . $href . '" method="POST" data-ppformbase >';
-	$html .= '<div class="ppTopErrors">';
-	$html .=	'<div class="em" data-error="名前" ></div>';
-	$html .=	'<div class="em" data-error="フリガナ" ></div>';
-	$html .=	'<div class="em" data-error="メール" ></div>';
-	$html .=	'<div class="em" data-error="電話" ></div>';
-	$html .=	'<div class="em" data-error="問い" ></div>';
-	$html .= '</div>';
-	$html .= $form;
+	$html = '<div class="contact-form" ><form class="ppform form-area" id="ppForm-target" action="' . $href . '" method="POST" data-ppformbase >';
+	$html .= $form_html;
 	$html .= '<p class="btn"><input type="submit" href="" value="内容を確認する"></p>';
-	$html .= '</form>';
+	$html .= '</form></div>';
 
 	return $html;
 }
 
-function get_form($formName) {
+function get_form_data($formName) {
 
 	$args = array(
 		'title' => $formName,
@@ -88,29 +109,28 @@ function get_form($formName) {
 	);
 
 	$query = new WP_Query( $args );
-
 	$form = $query->posts[0];
-	$content = $form->post_content;
-	return $content;
+
+	$form_data['template'] = $form->post_content;	
+	$form_data['id'] = $form->ID;
+
+	return $form_data;
 	
 }
 
 //add flexible urls for different schemes
-function get_actions() {
+function get_action() {
 	global $wp;
 	$params = explode('/', $wp->request);
 	if ($params[0] === 'confirm' ) {
-		$actions['current'] = 'confirm';
-		$actions['next'] = 'submit';
+		$action = 'confirm';
 	} else if ($params[0] === 'submit' ) {
-		$actions['current'] = 'submit';
-		$actions['next'] = 'complete';
+		$action = 'submit';
 	} else {
-		$actions['current'] = 'entry';
-		$actions['next'] = 'confirm';
+		$action = 'entry';
 	}
 
-	return $actions;
+	return $action;
 }
 
 //form details should be inserted
@@ -131,8 +151,6 @@ function save_response($data) {
 //take response ID and send, validate against time etc and sent meta
 function mail_data($data, $config) {
 
-	$config = parse_ini_file('config.ini', true);
-
     $input = '';
     foreach ($data as $key => $value) {
         $input .= ucfirst($key). ": ". $value ."\r\n";
@@ -146,25 +164,22 @@ function mail_data($data, $config) {
         $formated = str_replace($search, $value, $formated);
     }
 
-    $to_mail = $config[$data[$config["emailInputName"]]];
-    if (!isset($to_mail)) {
-        $to_mail = $config['defaultTo'];
-    }
-
     $mail_data = array(
-        'to' => $to_mail,
-        'from' => $data[$config["customerMailInputName"]],
-        'CC' => $data["CC"],
-        'Bcc' => $config["Bcc"],
+        'to' => $config['send-to'],
+        'from' => $config['sent-from'],
+        'CC' => $config["cc"],
+        'Bcc' => $config["bcc"],
         'message' => $formated,
-        'subject' => $data['subject'],
+        'subject' => 'default',
 	);
+
+	var_dump($mail_data);
 
     $mail = new Mail($mail_data);
    	return $mail->send();
 }
 
-function get_form_settings($form) {
+function get_form_settings($form_id) {
 
 	$VALIDATOR_TYPES = array(
 		'text' => "GenericField",
@@ -184,14 +199,27 @@ function get_form_settings($form) {
 		'errorEle' => "data-error",
 	);
 
+	$defaults = array(
+        'javascript' => true,
+        'complete_message' => 'Thank you for your contribution',
+        'invalid_error' => 'は不正です',
+        'required_error' => 'を入力してください',
+    );
+
+	$settings = get_option('ppform', $defaults);
+	$mail_settings = get_post_meta( $form_id, 'emailopt', true );
+
 	$config = array();
+	$config['form-actions'] = get_post_meta($form_id, 'form-action', true );
+	$config['mail'] = $mail_settings;
+	$config['javascript'] = $settings['javascript'];
+	$config['complete_message'] = $settings['complete_message'];
 	$config['validator-types'] = $VALIDATOR_TYPES;
 	$config['attributes'] = $ATTRIBUTES;
-
 	$config['error-message'] = array(
 		'error-class' => "hasError",
-		'require-message' => "を入力してください。",
-		'invalid-message' => "は不正です",
+		'require-message' => $settings['required_error'],
+		'invalid-message' => $settings['invalid_error'],
 	);
 
 	return $config;

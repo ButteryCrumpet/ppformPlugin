@@ -17,7 +17,7 @@ class PPForm {
         $this->parsed = $parser->parse($form);
         $fieldFactory = new FieldFactory();
         $this->fields = $fieldFactory->generateFields($this->parsed);
-        $form = new Form($this->fields);
+        $form = new Form($this->fields); //form parser too?
         $form->validate();
         $renderer = new FormRenderer($form);
         $output = $renderer->render();
