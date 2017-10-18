@@ -144,4 +144,10 @@
       font-size: inherit;
       color: inherit;
       box-sizing: content-box; }
-  
+
+      .contact-form .em {
+        color: lightcoral;
+        font-size: 0.9em;
+        height: 10px;
+        margin: 0;
+      }

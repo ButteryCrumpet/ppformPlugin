@@ -15,7 +15,6 @@ function ppform_form_init() {
         'menu_position' => 9,
         'supports' => array(
             'title',
-            'editor'
         ),
     );
 

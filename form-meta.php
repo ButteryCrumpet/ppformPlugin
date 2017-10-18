@@ -3,7 +3,7 @@
 function ppform_metaboxes() {
 
     //form metaboxes
-    //add_meta_box('fields-div', 'Fields', 'render_field_metabox', 'pp-form', 'normal');
+    add_meta_box('fields-div', 'Fields', 'render_field_metabox', 'pp-form', 'normal');
     add_meta_box('formactions-div', 'Actions', 'render_actions_metabox', 'pp-form', 'side');
     add_meta_box('emailopts-div', 'Email Options', 'render_email_opts_metabox', 'pp-form', 'normal');
     
@@ -22,6 +22,16 @@ function render_actions_metabox( $post ) {
         <input type="checkbox" name="form-action[send-email]" <?php echo ($vals['send-email']) ? 'checked' : '' ?>>
     </div>
     <?php
+}
+
+function render_field_metabox( $post ) {
+    $prev = get_post_meta( $post->ID, 'form-data', true );
+ 
+    $html = '<div id=formBuilder ><field-form ';
+    $html .= "initfields='" . $prev . "' >";
+    $html .= '</field-form></div>';
+
+    echo $html;
 }
 
 function render_email_opts_metabox( $post ) {
@@ -59,8 +69,8 @@ function render_response_data( $post ) {
 
 function save_field_meta( $post_id, $post ) {
 
-    $meta_key = 'ppfields';
-    if ( ! isset( $_POST['ppfields'] ) ) {
+    $meta_key = 'form-data';
+    if ( ! isset( $_POST['form-data'] ) ) {
         return $post_id;
     }
 

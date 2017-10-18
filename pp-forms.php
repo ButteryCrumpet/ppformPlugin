@@ -15,7 +15,7 @@ include 'settings-manager.php';
 include 'form-meta.php';
 include 'rewrites.php';
 include 'ppform-scripts.php';
-include 'ppform-templates.php';
+include 'ppform-parser.class.php';
 
 register_activation_hook(PPFORM_FILE, 'init_settings');
 
@@ -64,7 +64,7 @@ function run_ppform($atts) {
 			if ($config['form-actions']['send-email'])
 				$sent = mail_data($ppform->theData, $config['mail']);
 
-			return $message . ' ' . var_dump($sent);
+			return $message;
 		}
 	}
 	
@@ -72,20 +72,17 @@ function run_ppform($atts) {
 }
 
 function parse_form($form_template) {
-	global $TEMPLATES;
-
-	$parts = explode( ',' ,$form_template);
+	$parser = new PPFormJSONParser();
+	$fields = json_decode($form_template, true);
 	$html = '<dl>';
-	foreach($parts as $part) {
-		if (isset($TEMPLATES[$part])) {
-			$html .= $TEMPLATES[$part];
-			$added = true;
+	foreach($fields as $field) {	
+		$parsed = $parser->getTemplate($field['type'], $field['placeholder'], $field['required']);
+		if ($parsed) {
+			$html .= $parsed;
 		}
 	}
 
-	if (!$added) {
-		$html .= $form_template;
-	}
+	
 
 	return $html .= '</dl>';
 }
@@ -111,7 +108,7 @@ function get_form_data($formName) {
 	$query = new WP_Query( $args );
 	$form = $query->posts[0];
 
-	$form_data['template'] = $form->post_content;	
+	$form_data['template'] = get_post_meta($form->ID, 'form-data', true);	
 	$form_data['id'] = $form->ID;
 
 	return $form_data;
