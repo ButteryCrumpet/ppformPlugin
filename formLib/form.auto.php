@@ -38,11 +38,11 @@ class AutoForm extends Form {
 		$attr_config = $this->config['attributes'];
 		$attrs = DOMUtils::getAttributesAsArray($element);
 		$field;
-
+		
 		$name = $attrs['name'];
 		$required = array_key_exists($attr_config['required'] ,$attrs);
 		$validation = '';
-
+		
 		if(!array_key_exists($attr_config['validator-type'], $attrs)) {
 			//unsafe? force existence of key throw error here
 			$field = new GenericField($name, $required);
@@ -51,7 +51,7 @@ class AutoForm extends Form {
 			$className = $classTable[$validation];
 			$field = new $className($name, $required);
 		}
-
+		
 		$field->addMainElement($element);
 
 		return $field;
@@ -74,6 +74,7 @@ class AutoForm extends Form {
 		foreach ($elements as $element) {
 			$this->errorElements[] = $element;
 			$name = $element->getAttribute($errorAttr);
+			
 			if (isset($this->fields[$name])) {
 				$field = $this->fields[$name];
 				$field->addErrorElement($element);

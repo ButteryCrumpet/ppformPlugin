@@ -130,11 +130,7 @@
       pointer-events: none; }
     /* line 225, ../sass/_contact.scss */
     .contact-form select {
-      -moz-appearance: none;
-      -webkit-appearance: none;
-      -o-appearance: none;
-      -ms-appearance: none;
-      appearance: none;
+      
       border-radius: 0;
       border: 0;
       margin: 0;
@@ -151,3 +147,7 @@
         height: 10px;
         margin: 0;
       }
+    .contact-form label {
+       margin-right: 5px;
+       margin-left: 5px;
+     }

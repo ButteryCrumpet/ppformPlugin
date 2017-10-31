@@ -28,6 +28,67 @@ class PPFormJSONParser {
 
     }
 
+    public function generateTextInput($data) {
+        //Label Name ?Value? Validation Placeholder Required Textarea
+        $placeholder = 'placeholder="' . $data['placeholder'] . '"';
+        $requiredAttr = ($data['required']) ? $this->requiredAttr : '';
+        $requiredHTML = ($data['required']) ? $this->requiredHTML : $this->notRequiredHTML;
+        
+        $html = '<dt>' . $requiredHTML . $data['label'] . '</dt>';
+        $html .= '<dd>';
+        $html .= ($data['textArea']) ? '<textarea ' : '<input type="text" ';
+        $html .= $placeholder . ' ';
+        $html .= 'name="' . $data['name'] . '" ';
+        $html .= $requiredAttr . ' ';
+        $html .= 'data-ppform="' . $data['validation'] . '" ';
+        $html .= ($data['textarea']) ? '><textarea>' : '>';
+        $html .= '<p class="em" data-error="'. $data['name'] . '" ></p>';
+        $html .= '</dd>';
+
+        return $html;
+    }
+
+    public function generateMultiInput($data) {
+        $name = $data['type'] === 'Checkbox' ? $data['name'] .'[]' : $data['name'];
+
+        $html = $html = '<dt>' . $data['label'] . '</dt>';
+        $html .= '<dd>';
+        foreach ($data['buttons'] as $button) {
+            $html .= '<label>' . $button['label'] . '</label>';
+            $html .= '<input type="' . $data['type'] .  '" name="' . $name . '" value="' .$button['value']. '" ';
+            $html .= 'data-ppform="' .  $data['validation'] . '" ';
+            $html .= ($button['default']) ? 'checked >' : ' >'; 
+        }
+        $html .= '<p class="em" data-error="'. $data['name'] . '" ></p>';
+        $html .= '</dd>';
+
+        return $html;
+    }
+
+    public function generateSelectInput($data) {
+        $requiredAttr = ($data['required']) ? $this->requiredAttr : '';
+        $requiredHTML = ($data['required']) ? $this->requiredHTML : $this->notRequiredHTML;
+        $count = 0;
+        $html = '<dt>' . $requiredHTML . $data['label'] . '</dt>';
+        $html .= '<dd>';
+        $html .= '<select name="' . $data['name'] . '" ' . $requiredAttr . ' data-ppform="' . $data['validation'] .'"  ';
+        $html .= 'data-ppform="' .  $data['validation'] . '" >';
+        foreach ($data['optgroups'] as $optgroup) {
+            $html .= '<optgroup label="' . $optgroup['label'] . '" >';
+            foreach ($optgroup['buttons'] as $selection) {
+                $html .= '<option value="' . $selection['value'] . ' "';
+                $html .= ($selection['default']) ? 'selected >' : ' >';
+                $html .= $selection['label'] . '</option>';
+            }
+            $html .= '</optgroup>';
+
+        }
+        $html .= '</select>';
+        $html .= '<p class="em" data-error="'. $data['name'] . '" ></p>';
+        $html .= '</dd>';
+        return $html;
+    }
+
     private function generatetemplates() {
         $this->templates['Name'] = '<dt>{reqHTML}お名前</dt>
         <dd><input name="名前" {required} type="text" {placeholder}　太郎" data-ppform="text" /></dd>

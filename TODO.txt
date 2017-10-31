@@ -1,6 +1,13 @@
 
-Simple form creation
-responsive stylingly
+Simple form creation //basically done keep adding templates think of something for radios/selects?
 confirm mail works//
-refactor && clean
-TRANSLATION!!
+
+refactor && clean -- one class in, keep it gannin
+TRANSLATION!!!
+
+内容を送信する
+内容を修正する
+
+<div class="field-err">
+<p class="pp-em" data-error="代表者"></p>
+</div>

@@ -36,7 +36,7 @@ function run_ppform($atts) {
 	$config = get_form_settings($form_data['id']);
 	
 	$ppform = new AutoForm('default', $dom, $config);
-
+	
 	if ($action === 'entry') {
 		$form = $ppform->renderBaseForm($config['javascript']); 
 		return set_action($form, 'confirm');
@@ -75,20 +75,26 @@ function parse_form($form_template) {
 	$parser = new PPFormJSONParser();
 	$fields = json_decode($form_template, true);
 	$html = '<dl>';
-	foreach($fields as $field) {	
-		$parsed = $parser->getTemplate($field['type'], $field['placeholder'], $field['required']);
+	foreach($fields as $field) {
+		$parsed  = '';
+		//$parsed = $parser->getTemplate($field['type'], $field['placeholder'], $field['required']);
+		if ($field['type'] === 'Text') {
+			$parsed = $parser->generateTextInput($field);
+		} else if ($field['type'] === 'Radio' || $field['type'] === 'Checkbox') {
+			$parsed = $parser->generateMultiInput($field);
+		} else if ($field['type'] === 'Dropdown') {
+			$parsed = $parser->generateSelectInput($field);
+		}
 		if ($parsed) {
 			$html .= $parsed;
+			$count ++;
 		}
 	}
-
-	
-
 	return $html .= '</dl>';
 }
 
 function set_action($form_html, $action) {
-	$href = get_site_url() . '/' . $action . '/' . get_the_ID() . '/';
+	$href = get_site_url() . '/' . $action . '/' . get_the_ID() .'/';
 
 	$html = '<div class="contact-form" ><form class="ppform form-area" id="ppForm-target" action="' . $href . '" method="POST" data-ppformbase >';
 	$html .= $form_html;
@@ -179,11 +185,11 @@ function mail_data($data, $config) {
 function get_form_settings($form_id) {
 
 	$VALIDATOR_TYPES = array(
-		'text' => "GenericField",
-		'email' => "EmailField",
-		'kana' => "KanaField",
-		'phone' => "PhoneNoField",
-		'url' => "URLField",
+		'Generic' => "GenericField",
+		'Email' => "EmailField",
+		'Kana' => "KanaField",
+		'Phone' => "PhoneNoField",
+		'URL' => "URLField",
 		'zip' => "JapanZipField",
 		'jchars' => "JapaneseCharacters",
 	);
